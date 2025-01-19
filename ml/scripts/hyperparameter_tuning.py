@@ -7,7 +7,7 @@ def build_model(hp, lookback, num_features):
     """
     Build an LSTM model with hyperparameter tuning.
 
-    Args:
+    Params:
         hp: Hyperparameter object from Keras Tuner.
         lookback (int): Number of time steps for input sequences.
         num_features (int): Number of features in the input data.
@@ -47,7 +47,7 @@ def perform_hyperparameter_tuning(X_train_seq, y_train_seq, X_val_seq, y_val_seq
     """
     Perform hyperparameter tuning using Keras Tuner.
 
-    Args:
+    Params:
         X_train_seq (np.ndarray): Training sequences.
         y_train_seq (np.ndarray): Training targets.
         X_val_seq (np.ndarray): Validation sequences.
@@ -83,7 +83,7 @@ def perform_hyperparameter_tuning(X_train_seq, y_train_seq, X_val_seq, y_val_seq
     """
     Perform hyperparameter tuning using Keras Tuner.
 
-    Args:
+    Params:
         X_train_seq (np.ndarray): Training sequences.
         y_train_seq (np.ndarray): Training targets.
         X_val_seq (np.ndarray): Validation sequences.
@@ -119,7 +119,7 @@ def train_best_model(tuner):
     """
     Train the best model using the hyperparameters obtained from the tuner.
 
-    Args:
+    Params:
         tuner (kt.Hyperband): Tuner object containing hyperparameter results.
         X_train_seq (np.ndarray): Training sequences.
         y_train_seq (np.ndarray): Training targets.

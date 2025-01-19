@@ -4,6 +4,18 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 
 def preprocess_data(file_path,lookback):
+    """
+    Preprocesses the raw data by handling missing values, infinite values, aggregating data to daily,
+    adding time-based features, handling outliers, normalizing data, encoding categorical features,
+    creating lagged features, and splitting data into train, validation, and test sets.
+
+    Params:
+        file_path (str): Path to the CSV file containing the raw data.
+        lookback (int): Number of lagged steps to create for time-series modeling.
+
+    Returns:
+        tuple: X_train, X_val, X_test, y_train, y_val, y_test
+    """
     raw_data = pd.read_csv(file_path)
     # Define columns
     numeric_columns = raw_data.select_dtypes(include=[np.number]).columns
@@ -27,6 +39,18 @@ def preprocess_data(file_path,lookback):
     return X_train, X_val, X_test, y_train, y_val, y_test
 
 def handle_missing_values(data, numeric_columns, category_columns):
+    """
+    Handles missing values in the dataset by filling numerical columns with their mean and
+    categorical columns with their mode.
+
+    Params:
+        data (pd.DataFrame): Input DataFrame.
+        numeric_columns (list): List of numerical column names.
+        category_columns (list): List of categorical column names.
+
+    Returns:
+        pd.DataFrame: DataFrame with missing values handled.
+    """
     # Fill missing numerical values with the column mean
     data[numeric_columns] = data[numeric_columns].fillna(data[numeric_columns].mean())
 
@@ -38,6 +62,16 @@ def handle_missing_values(data, numeric_columns, category_columns):
     return data
 
 def handle_infinite_value(data, numeric_columns):
+    """
+    Replaces infinite values with NaN and fills them with the mean of the respective columns.
+
+    Params:
+        data (pd.DataFrame): Input DataFrame.
+        numeric_columns (list): List of numerical column names.
+
+    Returns:
+        pd.DataFrame: DataFrame with infinite values handled.
+    """
     # Replace positive and negative infinity with NaN
     data[numeric_columns] = data[numeric_columns].replace([np.inf, -np.inf], np.nan)
 
@@ -50,6 +84,16 @@ def handle_infinite_value(data, numeric_columns):
     return data
 
 def aggregate_data_to_daily(data, selected_columns):
+    """
+    Aggregates data to daily sums for selected columns.
+
+    Params:
+        data (pd.DataFrame): Input DataFrame.
+        selected_columns (list): List of columns to aggregate.
+
+    Returns:
+        pd.DataFrame: DataFrame with daily aggregated data.
+    """
     # Ensure 'Transaction_Date' is in datetime format
     data['Transaction_Date'] = pd.to_datetime(data['Transaction_Date'])
 
@@ -70,6 +114,15 @@ def aggregate_data_to_daily(data, selected_columns):
     return daily_data
 
 def add_time_based_features(daily_data):
+    """
+    Adds time-based features such as Day_of_Week, Is_Weekend, Year, and Month.
+
+    Params:
+        daily_data (pd.DataFrame): Input DataFrame with Transaction_Date column.
+
+    Returns:
+        pd.DataFrame: DataFrame with time-based features added.
+    """
     # Add time-based features directly from Transaction_Date
     daily_data['Day_of_Week'] = daily_data['Transaction_Date'].dt.dayofweek + 1  # Monday=1, Sunday=7
     daily_data['Is_Weekend'] = daily_data['Day_of_Week'].apply(lambda x: 1 if x in [6, 7] else 0)
@@ -79,6 +132,16 @@ def add_time_based_features(daily_data):
     return daily_data
 
 def handle_extreme_outlier(daily_data, selected_daily_num_columns):
+    """
+    Handles extreme outliers by clipping values to the 1st and 99th percentiles.
+
+    Params:
+        daily_data (pd.DataFrame): Input DataFrame.
+        selected_daily_num_columns (list): List of numerical columns to process.
+
+    Returns:
+        pd.DataFrame: DataFrame with extreme outliers handled.
+    """
     for col in selected_daily_num_columns:
         lower_limit = daily_data[col].quantile(0.01)
         upper_limit = daily_data[col].quantile(0.99)
@@ -87,24 +150,63 @@ def handle_extreme_outlier(daily_data, selected_daily_num_columns):
     return daily_data
 
 def normalize_data(daily_data, selected_daily_num_columns):
+    """
+    Normalizes numerical columns using StandardScaler.
+
+    Params:
+        daily_data (pd.DataFrame): Input DataFrame.
+        selected_daily_num_columns (list): List of numerical columns to normalize.
+
+    Returns:
+        pd.DataFrame: DataFrame with normalized numerical columns.
+    """
     scaler = StandardScaler()
     daily_data[selected_daily_num_columns] = scaler.fit_transform(daily_data[selected_daily_num_columns])
     print("Data amount after remove extreme outlier:\n", daily_data.head())
     return daily_data
 
 def encode_data(daily_data):
+    """
+    Encodes categorical features into dummy/one-hot encoded variables.
+
+    Params:
+        daily_data (pd.DataFrame): Input DataFrame.
+
+    Returns:
+        pd.DataFrame: DataFrame with encoded categorical variables.
+    """
     daily_data = pd.get_dummies(daily_data, columns=['Day_of_Week', 'Is_Weekend','Year','Month'], drop_first=True)
     print("Data amount after encoded:\n", daily_data.count())
     print("Data type:\n", daily_data.select_dtypes(include=['object']).columns)
     return daily_data
 
 def convert_data_type(daily_data):
+    """
+    Converts boolean columns to integers for consistency.
+
+    Params:
+        daily_data (pd.DataFrame): Input DataFrame.
+
+    Returns:
+        pd.DataFrame: DataFrame with converted data types.
+    """
     # Convert boolean columns to integers
     daily_data = daily_data.astype({col: 'int' for col in daily_data.select_dtypes(include=['bool']).columns})
     print("Data type:\n", daily_data.select_dtypes(include=['object']).columns)
     return daily_data
 
 def create_lagged_features(daily_data, selected_daily_num_columns, lookback):
+    """
+    Creates lagged features for time-series modeling.
+
+    Params:
+        daily_data (pd.DataFrame): Input DataFrame.
+        selected_daily_num_columns (list): List of numerical columns to create lagged features for.
+        lookback (int): Number of lagged steps.
+
+    Returns:
+        pd.DataFrame: DataFrame with lagged features.
+    """
     # Create lagged features
     for col in selected_daily_num_columns:
         for lag in range(1, lookback + 1):
@@ -115,6 +217,16 @@ def create_lagged_features(daily_data, selected_daily_num_columns, lookback):
     return lookback_daily_data
 
 def split_data(lookback_daily_data, target_column):
+    """
+    Splits data into training, validation, and test sets for supervised learning.
+
+    Params:
+        lookback_daily_data (pd.DataFrame): Input DataFrame with features and target.
+        target_column (str): Name of the target column.
+
+    Returns:
+        tuple: X_train, X_val, X_test, y_train, y_val, y_test
+    """
     # Define target and features
     X = lookback_daily_data.drop(columns=['Transaction_Date',target_column])
     y = lookback_daily_data[target_column]
@@ -126,6 +238,17 @@ def split_data(lookback_daily_data, target_column):
     return X_train, X_val, X_test, y_train, y_val, y_test
 
 def create_sequence(feature, target, lookback):
+    """
+    Creates sequences of features and targets for time-series modeling.
+
+    Params:
+        feature (np.ndarray): Feature data.
+        target (np.ndarray): Target data.
+        lookback (int): Number of lagged steps.
+
+    Returns:
+        tuple: Sequences of features and targets (X, y).
+    """
     X, y = [], []
     for i in range(len(feature) - lookback):
         X.append(feature[i:i+lookback])
