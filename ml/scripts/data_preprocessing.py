@@ -73,6 +73,8 @@ def add_time_based_features(daily_data):
     # Add time-based features directly from Transaction_Date
     daily_data['Day_of_Week'] = daily_data['Transaction_Date'].dt.dayofweek + 1  # Monday=1, Sunday=7
     daily_data['Is_Weekend'] = daily_data['Day_of_Week'].apply(lambda x: 1 if x in [6, 7] else 0)
+    daily_data['Year'] = daily_data['Transaction_Date'].dt.year
+    daily_data['Month'] = daily_data['Transaction_Date'].dt.month
     print("Data amount after time feature added:\n", daily_data.count())
     return daily_data
 
@@ -91,7 +93,7 @@ def normalize_data(daily_data, selected_daily_num_columns):
     return daily_data
 
 def encode_data(daily_data):
-    daily_data = pd.get_dummies(daily_data, columns=['Day_of_Week', 'Is_Weekend'], drop_first=True)
+    daily_data = pd.get_dummies(daily_data, columns=['Day_of_Week', 'Is_Weekend','Year','Month'], drop_first=True)
     print("Data amount after encoded:\n", daily_data.count())
     print("Data type:\n", daily_data.select_dtypes(include=['object']).columns)
     return daily_data
