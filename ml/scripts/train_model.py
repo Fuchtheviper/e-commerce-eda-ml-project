@@ -4,11 +4,8 @@ from tensorflow.keras.layers import LSTM, Dense, Dropout
 from tensorflow.keras.callbacks import EarlyStopping
 import joblib
 
-def train_model(X_train, y_train, X_val, y_val, model_path):
-    model = tf.keras.models.load_model(model_path)
-    #early_stopping = EarlyStopping(monitor='val_loss', patience=500, restore_best_weights=True)
-
-    history = model.fit(
+def train_model(X_train, y_train, X_val, y_val, best_model):
+    history = best_model.fit(
         X_train, y_train,
         validation_data=(X_val, y_val),
         epochs=500,
