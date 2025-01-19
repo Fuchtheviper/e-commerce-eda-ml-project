@@ -25,6 +25,7 @@ if __name__ == "__main__":
     input_shape = (X_train_seq.shape[1], X_train_seq.shape[2])
     print(f"LSTM Input Shape: {input_shape}")
 
+    # Tuning best parameter to tuner
     tuner = perform_hyperparameter_tuning(
     X_train_seq, y_train_seq,
     X_val_seq, y_val_seq,
@@ -32,7 +33,7 @@ if __name__ == "__main__":
     output_dir
 )
 
-# Train the best model
+    # Train the best model
     best_model = train_best_model(tuner)
 
     # Train model
@@ -64,3 +65,7 @@ if __name__ == "__main__":
     # Evaluate
     metrics = evaluate_model(y_test_seq, y_pred)
     print(metrics)
+
+    # Save model
+    best_model.save(model_path)
+    print("Model saved successfully!")
