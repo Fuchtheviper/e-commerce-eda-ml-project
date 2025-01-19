@@ -79,42 +79,6 @@ def perform_hyperparameter_tuning(X_train_seq, y_train_seq, X_val_seq, y_val_seq
 
     return tuner
 
-def perform_hyperparameter_tuning(X_train_seq, y_train_seq, X_val_seq, y_val_seq, lookback, num_features, output_dir):
-    """
-    Perform hyperparameter tuning using Keras Tuner.
-
-    Params:
-        X_train_seq (np.ndarray): Training sequences.
-        y_train_seq (np.ndarray): Training targets.
-        X_val_seq (np.ndarray): Validation sequences.
-        y_val_seq (np.ndarray): Validation targets.
-        lookback (int): Number of time steps for input sequences.
-        num_features (int): Number of features in the input data.
-        output_dir (str): Directory to save tuning results.
-
-    Returns:
-        kt.Hyperband: Tuner object after hyperparameter tuning.
-    """
-    # Set up the tuner
-    tuner = kt.RandomSearch(
-        lambda hp: build_model(hp, lookback, num_features),
-        objective='val_loss',
-        max_trials=10,
-        executions_per_trial=2,
-        directory=output_dir,
-        project_name='lstm_tuning'
-    )
-
-    # Perform tuning
-    tuner.search(
-        X_train_seq, y_train_seq,
-        validation_data=(X_val_seq, y_val_seq),
-        epochs=15,
-        batch_size=16
-    )
-
-    return tuner
-
 def train_best_model(tuner):
     """
     Train the best model using the hyperparameters obtained from the tuner.
